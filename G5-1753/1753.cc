@@ -1,6 +1,7 @@
 #include <iostream>
 #include <functional>
 #include <queue>
+#include <list>
 
 using namespace std;
 
@@ -19,25 +20,26 @@ int start;
 // 노드번호, 최단 거리 
 priority_queue <pair<int, int>, vector<pair<int,int> >, cmp> pq;
 
+// nodenum, list
 
 int main () {
     cin >> V >> E;
     cin >> start;
 
-    int** weight = new int*[V];
-    for (int i = 0; i < V; i++) {
-        weight[i] = new int[V];
-    }
     int* answer = new int[V];
+    bool* visited = new bool[V];
+    vector <list <pair<int, int> >* > weight;
+    weight.reserve(V);
 
 
     for (int i = 0; i < V; i++) {
         answer[i] = MAX;
+        weight[i] = new list <pair<int, int> >;
+        visited[i] = false;
+
         for (int j = 0; j < V; j++) {
             if (i == j) {
-                weight[i][j] = 0;
-            } else {
-                weight[i][j] = MAX;
+                weight[i] -> push_back(make_pair(i, 0));
             }
         }
     }
@@ -45,21 +47,24 @@ int main () {
     for (int i = 0; i < E; i++) {
         int u, v, w;
         cin >> u >> v >> w;
-        weight[u - 1][v - 1] = w;
+        weight[u - 1] -> push_back(make_pair(v - 1, w));
     }
-    pq.push(make_pair(start - 1, weight[start - 1][start - 1]));
+    pq.push(make_pair(start - 1, 0));
 
     while (!pq.empty()) {
         int nodeNum = pq.top().first;
         int pathLength = pq.top().second;
         pq.pop();
+        if (visited[nodeNum]) {
+            continue;
+        }
+        visited[nodeNum] = true;
+        for (auto it = weight[nodeNum] -> begin(); it != weight[nodeNum] -> end(); it++) {
+            if (answer[it -> first] > pathLength + it -> second) {
+                answer[it -> first] = pathLength + it -> second;
+                pq.push(make_pair(it -> first, answer[it -> first]));
+                visited[it -> first] = false;
 
-        for (int i = 0; i < V; i++) {
-            if (weight[nodeNum][i] != MAX) {
-                if (answer[i] > pathLength + weight[nodeNum][i]) {
-                    answer[i] = pathLength + weight[nodeNum][i];
-                    pq.push(make_pair(i, answer[i]));
-                }
             }
         }
     }
@@ -71,10 +76,5 @@ int main () {
             cout << answer[i] << endl;
         }
     }
-    for (int i = 0; i < V; i++) {
-        delete[] weight[i];
-    }
-    delete[] weight;
 
-    delete[] answer;
 }  
