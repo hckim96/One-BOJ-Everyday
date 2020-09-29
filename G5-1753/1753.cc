@@ -71,9 +71,9 @@ int main () {
 
     for (int i = 0; i < V; i++) {
         if (answer[i] == MAX) {
-            cout << "INF" << endl;
+            cout << "INF" << "\n";
         } else {
-            cout << answer[i] << endl;
+            cout << answer[i] << "\n";
         }
     }
 
