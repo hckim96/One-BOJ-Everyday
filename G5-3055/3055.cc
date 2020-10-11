@@ -11,7 +11,6 @@ int map[50][50];
 // time when water in the position start : 0
 int waterMap[50][50];
 int dooMap[50][50];
-bool visited[50][50];
 int answer = 987654321;
 queue<pair<int, int> > water, doo;
 int GoR,GoC;
@@ -19,25 +18,6 @@ int GoR,GoC;
 int dr[4] = {-1, 0, 1, 0};
 int dc[4] = {0, 1, 0, -1};
 
-void dfs(int GoR, int GoC, int time) {
-    if (map[GoR][GoC] == 3) {
-        answer = min(answer, time);
-        return;
-    }
-
-    for (int i = 0; i < 4; i++) {
-        int nextR = GoR + dr[i];
-        int nextC = GoC + dc[i];
-        
-        if (nextR >= 0 && nextR < R && nextC >= 0 && nextC < C && !visited[nextR][nextC] && waterMap[nextR][nextC] > time + 1 ) {
-            if (map[nextR][nextC] == 0) {
-                visited[nextR][nextC] = true;
-                dfs(nextR, nextC, time + 1);
-                visited[nextR][nextC] = false;
-            }
-        }
-    }
-}
 int DR, DC;
 int main() {
     cin >> R >> C;
@@ -70,8 +50,8 @@ int main() {
                     break;
                 case 'S':
                     map[i][j] = 4;
-                    visited[i][j] = true;
                     doo.push({i,j});
+                    dooMap[i][j] = 0;
                     GoR = i;
                     GoC = j;
                     break;
@@ -107,26 +87,26 @@ int main() {
             int nextR = dooR + dr[i];
             int nextC = dooC + dc[i];
             if (nextR >= 0 && nextR < R && nextC >= 0 && nextC < C) {
-                if(map[nextR][nextC] == 3) {
-                    dooMap[nextR][nextC] = min(dooMap[dooR][dooC] + 1, dooMap[nextR][nextC]);
-                    while (!doo.empty()) {
-                        doo.pop();
-                    }
-                    break;
-                }
-                if (map[nextR][nextC] == 0 || map[nextR][nextC] == 4) {
-                    if (dooMap[nextR][nextC] > dooMap[dooR][dooC] + 1) {
-                        dooMap[nextR][nextC] = dooMap[dooR][dooC] + 1;
-                        doo.push({nextR, nextC});
+                if (waterMap[nextR][nextC] > 1 + dooMap[dooR][dooC]) {
 
+                    if (map[nextR][nextC] == 3) {
+                        dooMap[nextR][nextC] = min(dooMap[dooR][dooC] + 1, dooMap[nextR][nextC]);
+                        while (!doo.empty()) {
+                            doo.pop();
+                        }
+                        break;
+                    }
+                    if (map[nextR][nextC] == 0 || map[nextR][nextC] == 4) {
+                        if (dooMap[nextR][nextC] > dooMap[dooR][dooC] + 1) {
+                            dooMap[nextR][nextC] = dooMap[dooR][dooC] + 1;
+                            doo.push({nextR, nextC});
+
+                        }
                     }
                 }
             }
         }
     }
-
-
-    // dfs(GoR, GoC, 0);
 
     if (dooMap[DR][DC] == 987654321) {
         cout << "KAKTUS\n";
