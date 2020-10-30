@@ -13,12 +13,11 @@ int answer = 0;
 int bfs() {
     queue<pair<int, int> > target;
     int ret = 0;
-
     bool visited[12][6] = {0};
+
     for (int i = 0; i < 12; i++) {
         for (int j = 0; j < 6; j++) {
-            if (map[i][j] == '.' || visited[i][j]) {
-                visited[i][j] = true;
+            if (map[i][j] == '.') {
                 continue;
             } else {
 
@@ -74,29 +73,30 @@ int bfs() {
         int r = target.front().first;
         int c = target.front().second;
         target.pop();
-        cout << answer << " " << r << ", " << c << endl;
         map[r][c] = '.';
     }
 
     // move down;
-    for (int i = 11; i >= 0; i--) {
+    for (int i = 10; i >= 0; i--) {
         for (int j = 0; j < 6; j++) {
             if (map[i][j] == '.') {
                 continue;
             }
-            int nr = i;
-            for (int nr = i + 1; nr < 12; nr++) {
+            int nr = i + 1;
+            for (; nr < 12; nr++) {
                 if (map[nr][j] != '.') {
                     nr--;
                     break;
                 }
+            }
+            if (nr == 12) {
+                nr--;
             }
             char tmp = map[i][j];
             map[i][j] = '.';
             map[nr][j] = tmp;
         }
     }
-
     return ret;
 }
 int main() {
@@ -107,8 +107,10 @@ int main() {
     }
 
     int ret = bfs();
+    
     while (ret > 0) {
         ret = bfs();
+        
     }
    cout << answer << "\n"; 
 }  
