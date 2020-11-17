@@ -18,6 +18,7 @@ enum ROBOT_DIRECTION {
 
 int A, B, N, M;
 
+// 북 동 서 남 순서인데 r 방향이 y 방향이랑 반대라서 반대로 해줌
 int dr[4] = {1, 0, -1, 0};
 int dc[4] = {0, 1, 0, -1};
 
@@ -58,6 +59,8 @@ bool executeOperation(tuple<int, char, int>& op) {
             r = nextR;
             c = nextC;
             map[r][c] = robotIdx + 1;
+            get<0>(robot[robotIdx]) = r;
+            get<1>(robot[robotIdx]) = c;
         }
         return true;
     } else if (operation == 'L') {
