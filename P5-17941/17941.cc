@@ -8,48 +8,110 @@ using namespace std;
 
 int N, M, Q, X, Y, R, C, K, D;
 
-// 0-index
+// 1- index
+int sheepSize[COORDINATE_MAX + 1][COORDINATE_MAX + 1];
 
-int sheepSize[COORDINATE_MAX][COORDINATE_MAX];
-int colMax[COORDINATE_MAX] = {0};
-int rowMax[COORDINATE_MAX] = {0};
+// 1 - index
+int segmentTree[4 * COORDINATE_MAX] = {0};
 
-int getMax() {
 
-    switch (D) {
-        case 1:
-            
-    }
-    int maxSize = 0;
-    for (int i = X - 1; i < X - 1 + R; i++) {
-        for (int j = Y - 1; j < Y - 1 + C; j++) {
-            if (i < 0 || i >= N || j < 0 || j >= M) {
-                continue;
-            }
-            maxSize = maxSize < sheepSize[i][j] ? sheepSize[i][j] : maxSize;
-        }
+int initSeg(int* lineMax, int nodeNum, int nodeStart, int nodeEnd) {
+    if (nodeStart == nodeEnd) {
+        return segmentTree[nodeNum] = lineMax[nodeStart];
     }
 
-    return maxSize;
+    int mid = (nodeStart + nodeEnd) / 2;
+    return segmentTree[nodeNum] = max(initSeg(lineMax, nodeNum * 2, nodeStart, mid), initSeg(lineMax, nodeNum * 2 + 1, mid + 1, nodeEnd));
 }
 
+int getMaxSeg(int nodeNum, int nodeStart, int nodeEnd, int segStart, int segEnd) {
+    if (segEnd < nodeStart || nodeEnd < segStart) {
+        return 0;
+    }
+    if (segStart <= nodeStart && nodeEnd <= segEnd) {
+        return segmentTree[nodeNum];
+    }
+    int mid = (nodeStart + nodeEnd) / 2;
+    return max(getMaxSeg(nodeNum * 2, nodeStart, mid, segStart, segEnd), getMaxSeg(nodeNum * 2 + 1, mid + 1, nodeEnd, segStart, segEnd));
 
-int dr[4] = {1, -1, 0, 0};
-int dc[4] = {0, 0, 1, -1};
-// move cctv
-void move() {
-    X = X + dr[D - 1];
-    Y = Y + dc[D - 1];
+}
+
+int getAnswer(int X, int Y, int R, int C, int K, int D) {
+    // 1 - index
+    int lineMax[COORDINATE_MAX + 1] = {0};
+    fill_n(segmentTree, 4 * COORDINATE_MAX, 0);
+
+    int answer = 0;
+    switch (D) {
+        case 1:
+            for (int i = X; i <= N; i++) {
+                for (int j = Y; j < Y + C; j++) {
+                    lineMax[i] = max(lineMax[i], sheepSize[i][j]);
+                }
+            }
+            initSeg(lineMax, 1, X, N);
+            for (int i = 0; i < K; i++) {
+                // cout << getMaxSeg(1, X, N, X + i, X + R - 1 + i) << "\n";
+                answer = answer ^ getMaxSeg(1, X, N, X + i, X + R - 1 + i);
+            }
+            break;
+        case 2:
+            for (int i = 1; i < X + R; i++) {
+                for (int j = Y; j < Y + C; j++) {
+                    lineMax[i] = max(lineMax[i], sheepSize[i][j]);
+                }
+            }
+            initSeg(lineMax, 1, 1, X + R - 1);
+            for (int i = 0; i < K; i++) {
+                // cout << getMaxSeg(1, X, X + R - 1, X - i, X + R - 1 - i) << "\n";
+                answer = answer ^ getMaxSeg(1, X, X + R - 1, X - i, X + R - 1 - i);
+            }
+            break;
+        case 3:
+            for (int i = X; i < X + R; i++) {
+                for (int j = Y; j <= M; j++) {
+                    lineMax[j] = max(lineMax[j], sheepSize[i][j]);
+                }
+            }
+            initSeg(lineMax, 1, Y, M);
+            for (int i = 0; i < K; i++) {
+                // cout << getMaxSeg(1, Y, M, Y + i, Y + C - 1 + i) << "\n";
+                answer = answer ^ getMaxSeg(1, Y, M, Y + i, Y + C - 1 + i);
+            }
+            break;
+        case 4:
+            for (int i = X; i < X + R; i++) {
+                for (int j = 1; j < Y + C; j++) {
+                    lineMax[j] = max(lineMax[j], sheepSize[i][j]);
+                }
+            }
+            // cout << "\nlineMax\n";
+            // for (int j = 1; j < Y + C; j++) {
+            //     cout << lineMax[j] << " ";
+            // }
+            // cout << "\n";
+            initSeg(lineMax, 1, 1, Y + C - 1);
+            for (int i = 0; i < K; i++) {
+                // cout << getMaxSeg(1, 1, Y + C - 1, Y - i, Y + C - 1 - i) << "\n";
+                // cout << Y - i << ", " << Y + C - 1 - i << "\n";
+
+                answer = answer ^ getMaxSeg(1, 1, Y + C - 1, Y - i, Y + C - 1 - i);
+            }
+            break;
+    }
+
+
+    return answer;
+
+
 }
 
 int main() {
     cin >> N >> M;
 
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < M; j++) {
+    for (int i = 1; i <= N; i++) {
+        for (int j = 1; j <= M; j++) {
             cin >> sheepSize[i][j];
-            rowMax[i] = max(rowMax[i], sheepSize[i][j]);
-            colMax[j] = max(colMax[j], sheepSize[i][j]);
         }
     }
 
@@ -57,12 +119,7 @@ int main() {
 
     for (int i = 0; i < Q; i++) {
         cin >> X >> Y >> R >> C >> K >> D;
-        int ret = 0;
-        for (int j = 0; j < K; j++) {
-            ret = ret ^ getMax();
-            move();
-        }
+        cout << getAnswer(X, Y, R, C, K, D) << "\n";
 
-        cout << ret << "\n";
     }
 }
