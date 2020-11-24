@@ -8,118 +8,110 @@ using namespace std;
 
 int N, M, Q, X, Y, R, C, K, D;
 
-// 1- index
-int sheepSize[COORDINATE_MAX + 1][COORDINATE_MAX + 1];
+// 0 - index
+int sheepSize[COORDINATE_MAX][COORDINATE_MAX];
+int seg2d[2 * COORDINATE_MAX][2 * COORDINATE_MAX];
 
-// 1 - index
-int segmentTree[4 * COORDINATE_MAX] = {0};
+// Bottom-up
 
-
-int initSeg(int* lineMax, int nodeNum, int nodeStart, int nodeEnd) {
-    if (nodeStart == nodeEnd) {
-        return segmentTree[nodeNum] = lineMax[nodeStart];
+void initSeg2d() {
+    // left bottom part
+    for (int i = N; i < 2 * N; i++) {
+        for (int j = M - 1; j > 0; j--) {
+            seg2d[i][j] = max(seg2d[i][j << 1], seg2d[i][j << 1 | 1]);
+        }
     }
 
-    int mid = (nodeStart + nodeEnd) / 2;
-    return segmentTree[nodeNum] = max(initSeg(lineMax, nodeNum * 2, nodeStart, mid), initSeg(lineMax, nodeNum * 2 + 1, mid + 1, nodeEnd));
+    // upper part
+    for (int i = N - 1; i > 0; i--) {
+        for (int j = 1; j < 2 * M; j++) {
+            seg2d[i][j] = max(seg2d[i << 1][j], seg2d[i << 1 | 1][j]);
+        }
+    }
 }
 
-int getMaxSeg(int nodeNum, int nodeStart, int nodeEnd, int segStart, int segEnd) {
-    if (segEnd < nodeStart || nodeEnd < segStart) {
-        return 0;
-    }
-    if (segStart <= nodeStart && nodeEnd <= segEnd) {
-        return segmentTree[nodeNum];
-    }
-    int mid = (nodeStart + nodeEnd) / 2;
-    return max(getMaxSeg(nodeNum * 2, nodeStart, mid, segStart, segEnd), getMaxSeg(nodeNum * 2 + 1, mid + 1, nodeEnd, segStart, segEnd));
+int query1d(int r, int c1, int c2) {
+    int ret = 0;
+    int left = M + c1;
+    int right = M + c2 + 1;
 
+    for (; left < right; left >>= 1, right >>= 1) {
+        if (left & 1) {
+            ret = max(ret, seg2d[r][left++]);
+        }
+        if (right & 1) {
+            ret = max(ret, seg2d[r][--right]);
+        }
+    }
+    return ret;
 }
 
-int getAnswer(int X, int Y, int R, int C, int K, int D) {
-    // 1 - index
-    int lineMax[COORDINATE_MAX + 1] = {0};
-    fill_n(segmentTree, 4 * COORDINATE_MAX, 0);
+int query2d(int r1, int r2, int c1, int c2) {
 
-    int answer = 0;
-    switch (D) {
-        case 1:
-            for (int i = X; i <= N; i++) {
-                for (int j = Y; j < Y + C; j++) {
-                    lineMax[i] = max(lineMax[i], sheepSize[i][j]);
-                }
-            }
-            initSeg(lineMax, 1, X, N);
-            for (int i = 0; i < K; i++) {
-                // cout << getMaxSeg(1, X, N, X + i, X + R - 1 + i) << "\n";
-                answer = answer ^ getMaxSeg(1, X, N, X + i, X + R - 1 + i);
-            }
-            break;
-        case 2:
-            for (int i = 1; i < X + R; i++) {
-                for (int j = Y; j < Y + C; j++) {
-                    lineMax[i] = max(lineMax[i], sheepSize[i][j]);
-                }
-            }
-            initSeg(lineMax, 1, 1, X + R - 1);
-            for (int i = 0; i < K; i++) {
-                // cout << getMaxSeg(1, X, X + R - 1, X - i, X + R - 1 - i) << "\n";
-                answer = answer ^ getMaxSeg(1, X, X + R - 1, X - i, X + R - 1 - i);
-            }
-            break;
-        case 3:
-            for (int i = X; i < X + R; i++) {
-                for (int j = Y; j <= M; j++) {
-                    lineMax[j] = max(lineMax[j], sheepSize[i][j]);
-                }
-            }
-            initSeg(lineMax, 1, Y, M);
-            for (int i = 0; i < K; i++) {
-                // cout << getMaxSeg(1, Y, M, Y + i, Y + C - 1 + i) << "\n";
-                answer = answer ^ getMaxSeg(1, Y, M, Y + i, Y + C - 1 + i);
-            }
-            break;
-        case 4:
-            for (int i = X; i < X + R; i++) {
-                for (int j = 1; j < Y + C; j++) {
-                    lineMax[j] = max(lineMax[j], sheepSize[i][j]);
-                }
-            }
-            // cout << "\nlineMax\n";
-            // for (int j = 1; j < Y + C; j++) {
-            //     cout << lineMax[j] << " ";
-            // }
-            // cout << "\n";
-            initSeg(lineMax, 1, 1, Y + C - 1);
-            for (int i = 0; i < K; i++) {
-                // cout << getMaxSeg(1, 1, Y + C - 1, Y - i, Y + C - 1 - i) << "\n";
-                // cout << Y - i << ", " << Y + C - 1 - i << "\n";
+    int ret = 0;
+    int top = N + r1;
+    int bottom = N + r2 + 1;
 
-                answer = answer ^ getMaxSeg(1, 1, Y + C - 1, Y - i, Y + C - 1 - i);
-            }
-            break;
+    for (; top < bottom; top >>= 1, bottom >>= 1) {
+        if (top & 1) {
+            ret = max(ret, query1d(top++, c1, c2));
+        }
+        if (bottom & 1) {
+            ret = max(ret, query1d(--bottom, c1, c2));
+        }
     }
 
-
-    return answer;
-
-
+    return ret;
 }
 
 int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
     cin >> N >> M;
 
-    for (int i = 1; i <= N; i++) {
-        for (int j = 1; j <= M; j++) {
+    for (int i = 0; i < N; i++) {
+        for (int j = 0; j < M; j++) {
             cin >> sheepSize[i][j];
+            seg2d[N + i][M + j] = sheepSize[i][j];
         }
     }
 
     cin >> Q;
 
+    initSeg2d();
+
     for (int i = 0; i < Q; i++) {
         cin >> X >> Y >> R >> C >> K >> D;
-        cout << getAnswer(X, Y, R, C, K, D) << "\n";
+        X--;
+        Y--;
+        int ret = 0;
 
+        switch (D) {
+            case 1:
+                for (int j = 0; j < K; j++) {
+                    ret = ret ^ query2d(X + j, X + R - 1 + j, Y, Y + C - 1);
+                    // cout << "\n max: " << query2d(X + j, X + R - 1 + j, Y, Y + C - 1) << "\n";
+                }
+                break;
+            case 2:
+                for (int j = 0; j < K; j++) {
+                    ret = ret ^ query2d(X - j, X + R - 1 - j, Y, Y + C - 1);
+                    // cout << "\n max: " << query2d(X - j, X + R - 1 - j, Y, Y + C - 1) << "\n";
+                }
+                break;
+            case 3:
+                for (int j = 0; j < K; j++) {
+                    ret = ret ^ query2d(X, X + R - 1, Y + j, Y + C - 1 + j);
+                    // cout << "\n max: " << query2d(X, X + R - 1, Y + j, Y + C - 1 + j) << "\n";
+                }
+                break;
+            case 4:
+                for (int j = 0; j < K; j++) {
+                    ret = ret ^ query2d(X, X + R - 1, Y - j, Y + C - 1 - j);
+                    // cout << "\n max: " << query2d(X, X + R - 1, Y - j, Y + C - 1 - j) << "\n";
+                }
+                break;
+        }
+        cout << ret << "\n";
     }
 }
