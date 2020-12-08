@@ -11,12 +11,12 @@ vector<int> adjacencyList[V_MAX + 1];
 
 int visited[V_MAX + 1];
 
-void bfs() {
+void bfs(int start) {
 
     queue<int> q;
     int front;
-    visited[1] = 1;
-    q.push(1);
+    visited[start] = 1;
+    q.push(start);
 
     while (!q.empty()) {
         front = q.front();
@@ -43,13 +43,15 @@ bool isBipartite() {
     }
     return true;
 }
+
 int main() {
-    
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
+
     cin >> K;
 
     while (K--) {
         fill_n(visited, V + 1, 0);
-
 
         cin >> V >> E;
         
@@ -60,7 +62,11 @@ int main() {
             adjacencyList[n2].push_back(n1);
         }
 
-        bfs();
+        for (int i = 1; i <= V; i++) {
+            if (visited[i] == 0) {
+                bfs(i);
+            }
+        }
 
         if (isBipartite()) {
             cout << "YES\n";
@@ -71,6 +77,5 @@ int main() {
         for (int i = 1; i <= V; i++) {
             adjacencyList[i].clear();
         }
-
     }
 }
