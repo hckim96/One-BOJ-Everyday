@@ -1,4 +1,6 @@
-# 1010
+# 1010 다리 놓기
+
+- https://www.acmicpc.net/problem/1010
 
 mCn (number of combinations) 를 구하면 된다.
 
