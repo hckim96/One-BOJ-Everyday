@@ -1,5 +1,6 @@
 # 1011 Fly me to the Alpha Centauri
 
+- https://www.acmicpc.net/problem/1011
 
 횟수 당 최대로 이동 가능한 거리는 한번에 이동한 거리의 최대값을 x 라 할 때, x^2 이거나 x^2 + x 이다. 
 
