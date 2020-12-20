@@ -1,6 +1,5 @@
 #include <iostream>
-#include <queue>
-#include <algorithm>
+#include <vector>
 
 using namespace std;
 
@@ -69,6 +68,19 @@ int main() {
                                 map[i][j] += (age / 2) * die;
                                 it -> first++;
                                 it -> second = canLive;
+
+                                if (it -> first % 5 == 0) {
+                                    for (int dir = 0; dir < 8; dir++) {
+                                        int nr, nc;
+                                        nr = i + dr[dir];
+                                        nc = j + dc[dir];
+
+                                        if (nr < 1 || nr > N || nc < 1 || nc > N) {
+                                            continue;
+                                        }
+                                        reproduce[nr][nc] += it -> second;
+                                    }
+                                }
                                 it++;
                             }
                             while (it != tree[i][j].rend()) {
@@ -86,7 +98,9 @@ int main() {
         // 번식, 겨
         for (int i = 1; i <= N; i++) {
             for (int j = 1; j <= N; j++) {
-                tree[i][j].push_back({1, reproduce[i][j]});
+                if (reproduce[i][j] != 0) {
+                    tree[i][j].push_back({1, reproduce[i][j]});
+                }
                 map[i][j] += A[i][j];
             }
         }
