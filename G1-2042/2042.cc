@@ -27,7 +27,7 @@ long long init(int nodeNum, int start, int end) {
     }
 }
 
-long long sum(int nodeNum, int nodeStart, int nodeEnd, long long targetStart, long long targetEnd) {
+long long sum(int nodeNum, int nodeStart, int nodeEnd, int targetStart, int targetEnd) {
 
     if (nodeEnd < targetStart || targetEnd < nodeStart) {
         return 0;
@@ -56,6 +56,8 @@ void update(int nodeNum, int nodeStart, int nodeEnd, int targetIndex, long long 
     }
 }
 int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr);
 
     cin >> N >> M >> K;
 
@@ -66,7 +68,8 @@ int main() {
     init(1, 0, N - 1);
     
     for (int i = 0; i < M + K; i++) {
-        int a, b, c;
+        int a, b;
+        long long c;
 
         cin >> a >> b >> c;
 
