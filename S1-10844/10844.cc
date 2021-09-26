@@ -28,4 +28,4 @@ int main() {
         answer += dp[N][i];
     }
     cout << answer % MOD << '\n';
-}
+} 
